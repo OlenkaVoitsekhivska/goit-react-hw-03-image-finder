@@ -22,7 +22,6 @@ export default class Searchbar extends Component {
     }
 
     this.props.onSubmit(this.state.query);
-    this.setState({ query: '' });
   };
 
   render() {
@@ -36,6 +35,7 @@ export default class Searchbar extends Component {
             autoComplete="off"
             autoFocus
             placeholder="Search images and photos"
+            value = {this.state.query}
           />
           <button type="submit" className={s.searchFormButton}>
             search

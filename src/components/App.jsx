@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 
-import { ToastContainer, toast} from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
@@ -18,7 +17,7 @@ export default class App extends Component {
     page: 1,
     status: 'idle',
     error: '',
-    perPageRes:[]
+    totalHits: null,
   };
 
   fetchApi = () => {
@@ -29,17 +28,22 @@ export default class App extends Component {
         if (response.ok) {
           return response.json();
         }
-          return Promise.reject(new Error('Failed to find any images'));
+        return Promise.reject(new Error('Failed to find any images'));
       })
       .then(pics => {
-        if(!pics.total){
-          toast.error('Did find anything, mate')
+        if (!pics.total) {
+          toast.error('Did find anything, mate');
         }
+        const selectedProperties = pics.hits.map(
+          ({ id, largeImageURL, webformatURL }) => {
+            return { id, largeImageURL, webformatURL };
+          }
+        );
         this.setState(prevState => {
           return {
-            pics: [...prevState.pics, ...pics.hits],
-            perPageRes: [...pics.hits],//fetch from each call
+            pics: [...prevState.pics, ...selectedProperties],
             status: 'resolved',
+            totalHits: pics.total,
           };
         });
       })
@@ -47,13 +51,9 @@ export default class App extends Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-
     if (this.state.query !== prevState.query) {
-      this.setState({ status: 'pending' });
-      this.setState({pics:[]})
+      this.setState({ status: 'pending', pics: [], page: 1 });
       this.fetchApi();
-      this.setState({ page: 1 });
-
     }
     if (
       this.state.query === prevState.query &&
@@ -63,8 +63,6 @@ export default class App extends Component {
       this.fetchApi();
     }
   }
-
-
 
   processSubmit = query => {
     this.setState({ query });
@@ -76,15 +74,13 @@ export default class App extends Component {
     });
   };
 
-
-
   render() {
-    const { pics,perPageRes,status } = this.state;
+    const { pics, status, totalHits } = this.state;
     return (
       <>
         <Searchbar onSubmit={this.processSubmit} />
-        <ImageGallery images={pics} />
-        {perPageRes.length === 12 && <Button onClick={this.handleLoadMore} />}
+        {pics.length && <ImageGallery images={pics} />}
+        {totalHits > pics.length && <Button onClick={this.handleLoadMore} />}
         {status === 'pending' && <Loader />}
         <ToastContainer autoClose={2000} />
       </>

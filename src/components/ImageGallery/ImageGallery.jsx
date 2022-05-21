@@ -27,10 +27,10 @@ export default class ImageGallery extends Component {
 
   toggleModal = () => {
     this.setState(({ showModal }) => ({ showModal: !showModal }));
-    this.setState({ bigPic: null });
   };
 
   render() {
+    const { showModal, bigPic } = this.state;
     return (
       <>
         <ul className={s.gallery} onClick={this.toggleModal}>
@@ -44,8 +44,8 @@ export default class ImageGallery extends Component {
             );
           })}
         </ul>
-        {this.state.showModal && (
-          <Modal onClose={this.toggleModal} pic={this.state.bigPic} />
+        {showModal && bigPic && (
+          <Modal onClose={this.toggleModal} pic={bigPic} />
         )}
       </>
     );
